@@ -1,0 +1,8 @@
+TODO:
+
+POST data and retrieve cookies (remember to use cookies and set all the headers and data)
+try to get page using those cookies
+???
+profit
+
+INFO:
