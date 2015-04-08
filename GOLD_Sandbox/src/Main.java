@@ -5,20 +5,71 @@ import org.jsoup.*;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.*;
+import org.jsoup.select.*;
 public class Main {
-
+	private static Map<String, String> cookies;
+	
 	public static void main(String[] args) {
 		
-		//test commit
+		try{
+			cookies = getCookies();
+		}catch(Exception e){
+			System.out.println("Could not connect to GOLD");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		Connection grabSchedule;
 		
-		//INSERT INFO TO TEST
-		String username="USERNAME";
-		String password="PASSWORD";
+		grabSchedule= Jsoup.connect("https://my.sa.ucsb.edu/gold/StudentSchedule.aspx")
+				.cookies(cookies)
+				.timeout(5000)
+				.userAgent("Mozilla/0.1 App Testing");
 		
 		
+		
+		Document schedulePage=null;
+		try {
+			schedulePage=grabSchedule.get();
+			
+			if(schedulePage.title().equals("Login")){
+				System.out.println("Login failed");
+				System.exit(1);
+			}
+			
+		} catch (IOException e) {
+			System.out.println("error: grabbing schedule");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		//id contains courseheading
+		Element classTable = schedulePage.getElementById("pageContent_CourseList");
+		int classCount=classTable.select("[id*=courseheading]").size();
+		
+		Course[]  courseArray= new Course[classCount]; 
+		
+		//format and store data
+		Elements exp = classTable.select("td[class*=clcellprimary]");
+		for(Element e : exp){
+			System.out.println(e.text());
+		}
+		
+		
+	}
+	
+	
+	private static Map<String, String> getCookies(){
+		
+		String username="$USERNAME";
+		String password="$PASSWORD";
+		String VIEWSTATE;
+		String VIEWSTATEGENERATOR;
+		String EVENTVALIDATION;
+		Map<String, String> cookies = new HashMap<String, String>();																																									
+		
+		//connect to login page to grab header data
 		Document loginPage=null;
-		Connection initialConnection=null;
-		Map<String, String> cookies = new HashMap<String, String>();
+		Connection initialConnection=null;	
 		try {
 			initialConnection = Jsoup.connect("https://my.sa.ucsb.edu/gold/Login.aspx");
 			loginPage=initialConnection.get();
@@ -30,21 +81,12 @@ public class Main {
 			System.exit(1);
 		}
 		
-		if(loginPage.title().equals("Login")){
-			System.out.println("Login failed");
-			System.exit(0);
-		}
-		String VIEWSTATE;
-		String VIEWSTATEGENERATOR;
-		String EVENTVALIDATION;
-		
 		VIEWSTATE=loginPage.select("#__VIEWSTATE").val();
-		//System.out.println(VIEWSTATE);
 		VIEWSTATEGENERATOR=loginPage.select("#__VIEWSTATEGENERATOR").val();
-		//System.out.println(VIEWSTATEGENERATOR);
 		EVENTVALIDATION=loginPage.select("#__EVENTVALIDATION").val();
-		//System.out.println(EVENTVALIDATION);
 		
+		
+		//Use header data to log into gold then store cookies
 		Response gatherCookies;
 		try {
 			gatherCookies = Jsoup.connect("https://my.sa.ucsb.edu/gold/Login.aspx")
@@ -56,6 +98,7 @@ public class Main {
 					.method(Method.POST)
 				    .execute();
 			
+			
 			cookies.putAll(gatherCookies.cookies());
 			
 		} catch (IOException e) {
@@ -64,24 +107,7 @@ public class Main {
 			System.exit(1);
 		};
 		
-		
-		Connection grabSchedule;
-		
-		grabSchedule= Jsoup.connect("https://my.sa.ucsb.edu/gold/StudentSchedule.aspx")
-				.cookies(cookies)
-				.timeout(5000)
-				.userAgent("Mozilla/0.1 App Testing");
-		Document schedulePage=null;
-		try {
-			schedulePage=grabSchedule.get();
-		} catch (IOException e) {
-			System.out.println("error: grabbing schedule");
-			e.printStackTrace();
-			System.exit(1);
-		}
-		
-		
-		
+		return cookies;
 		
 	}
 
@@ -89,6 +115,9 @@ public class Main {
 
 class Course{
 	private String name;
+	private int enrollCode;
+	private char grading;
+	private double units;
 	private String professor;
 	private String lecture;
 	private String lectureRoom;
@@ -97,8 +126,14 @@ class Course{
 	private String sectionRoom;
 	private String finalDate;
 	
-	Course(String name, String professor, String lecture, String lectureRoom, String ta, String section, String sectionRoom, String finalDate){
+	
+	public Course(){}
+	
+	public Course(String name, int enrollCode, char grading, double units, String professor, String lecture, String lectureRoom, String ta, String section, String sectionRoom, String finalDate){
 		this.name=name;
+		this.enrollCode=enrollCode;
+		this.grading=grading;
+		this.units=units;
 		this.professor=professor;
 		this.lecture=lecture;
 		this.lectureRoom=lectureRoom;
@@ -108,6 +143,30 @@ class Course{
 		this.finalDate=finalDate;
 	}
 	
+	public int getEnrollCode() {
+		return enrollCode;
+	}
+
+	public void setEnrollCode(int enrollCode) {
+		this.enrollCode = enrollCode;
+	}
+
+	public char getGrading() {
+		return grading;
+	}
+
+	public void setGrading(char grading) {
+		this.grading = grading;
+	}
+
+	public double getUnits() {
+		return units;
+	}
+
+	public void setUnits(double units) {
+		this.units = units;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -174,10 +233,12 @@ class Course{
 
 	@Override
 	public String toString() {
-		return "Course [name=" + name + ", professor=" + professor
-				+ ", lecture=" + lecture + ", lectureRoom=" + lectureRoom
-				+ ", ta=" + ta + ", section=" + section + ", sectionRoom="
-				+ sectionRoom + ", finalDate=" + finalDate + "]";
+		return "Course [name=" + name + ", enrollCode=" + enrollCode
+				+ ", grading=" + grading + ", units=" + units + ", professor="
+				+ professor + ", lecture=" + lecture + ", lectureRoom="
+				+ lectureRoom + ", ta=" + ta + ", section=" + section
+				+ ", sectionRoom=" + sectionRoom + ", finalDate=" + finalDate
+				+ "]";
 	}
 	
 	
