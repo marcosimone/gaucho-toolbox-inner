@@ -1,5 +1,11 @@
+//Marco Simone
+//Started: 2015-4-1
+//Inner workings of a UCSB GOLD app to come
+//This is just to write the alg to scrape and store the data
+//after this is transforming this into an android app
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.jsoup.*;
 import org.jsoup.Connection.Method;
@@ -8,6 +14,9 @@ import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 public class Main {
 	private static Map<String, String> cookies;
+	private static Course[]  courseArray;
+	
+	public static Course[] getCourses(){return courseArray;};
 	
 	public static void main(String[] args) {
 		
@@ -46,17 +55,28 @@ public class Main {
 		Element classTable = schedulePage.getElementById("pageContent_CourseList");
 		int classCount=classTable.select("[id*=courseheading]").size();
 		
-		Course[]  courseArray= new Course[classCount]; 
+		courseArray= new Course[classCount]; 
 		
 		//format and store data
 		Elements exp = classTable.select("td[class*=clcellprimary]");
-		for(Element e : exp){
-			System.out.println(e.text());
+		List<String> rawInfo = new ArrayList<String>();
+		for (int i = 0; i < exp.size(); i++) {
+			
+			String tmp;
+			tmp=exp.get(i).text();
+			tmp=tmp.replaceAll(Pattern.quote("course info /  /"), "");
+			if(tmp.contains("http://"))
+				tmp=tmp.substring(tmp.indexOf("Location: ")+9, tmp.indexOf("Campus Map"));
+			tmp=tmp.trim();
+			rawInfo.add(tmp);
+		}
+		
+		for (String str : rawInfo) {
+			System.out.println(str);
 		}
 		
 		
 	}
-	
 	
 	private static Map<String, String> getCookies(){
 		
@@ -129,20 +149,8 @@ class Course{
 	
 	public Course(){}
 	
-	public Course(String name, int enrollCode, char grading, double units, String professor, String lecture, String lectureRoom, String ta, String section, String sectionRoom, String finalDate){
-		this.name=name;
-		this.enrollCode=enrollCode;
-		this.grading=grading;
-		this.units=units;
-		this.professor=professor;
-		this.lecture=lecture;
-		this.lectureRoom=lectureRoom;
-		this.ta=ta;
-		this.section=section;
-		this.sectionRoom=sectionRoom;
-		this.finalDate=finalDate;
-	}
-	
+	//Big shout-out to eclipse getter/setter auto-fill
+
 	public int getEnrollCode() {
 		return enrollCode;
 	}
