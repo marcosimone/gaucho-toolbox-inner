@@ -1,6 +1,0 @@
-TODO:
-
--Reliably fetch course info
-
-
-INFO:
