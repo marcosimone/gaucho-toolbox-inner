@@ -15,12 +15,12 @@ import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 public class Main {
 	private static Map<String, String> cookies;
-	private static Course[]  courseArray;
+	private static List<Course>  courseArray;
 	
-	public static Course[] getCourses(){return courseArray;};
+	public static List<Course> getCourses(){return courseArray;};
 	
 	public static void main(String[] args) {
-		
+		courseArray= new ArrayList<Course>(); 
 		try{
 			cookies = getCookies();
 		}catch(Exception e){
@@ -54,13 +54,30 @@ public class Main {
 		
 		//id contains courseheading
 		Element classTable = schedulePage.getElementById("pageContent_CourseList");
-		int classCount=classTable.select("[id*=courseheading]").size();
+		Elements classTitles=classTable.select("[id*=courseheading]");
 		
-		courseArray= new Course[classCount]; 
+		//courses with titles constructed
+		for(int i=0;i<classTitles.size();i++){
+			courseArray.add(new Course(classTitles.get(i).text().replace(String.valueOf((char) 160), " ").trim()));
+			
+		}
+		
+		Element finalsTable = schedulePage.getElementById("pageContent_FinalsGrid");
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		//format and store data
 		Elements exp = classTable.select("td[class*=clcellprimary]");
-		List<String> rawInfo = new ArrayList<String>();
+		List<String> rawData = new ArrayList<String>();
 		for (int i = 0; i < exp.size(); i++) {
 			
 			String tmp;
@@ -69,14 +86,16 @@ public class Main {
 			if(tmp.contains("http://"))
 				tmp=tmp.substring(tmp.indexOf("Location: ")+9, tmp.indexOf("Campus Map"));
 			tmp=tmp.replace(String.valueOf((char) 160), " ").trim();
-			rawInfo.add(tmp);
+			rawData.add(tmp);
 		}
 		
-		//Pattern intPattern = Pattern.compile("[\\+\\-]?\\d+");
-		
-		for (String str : rawInfo) {
-			
-			System.out.println(str);
+		String intPattern = "[\\+\\-]?\\d+";
+		String charPattern = "[LP]";
+		String doublePattern="\\d\\.\\d+";
+		Course tmp;
+		for (int index=0;index<rawData.size();index++) {
+			String str=rawData.get(index);
+				
 		}	
 		
 		
@@ -152,6 +171,9 @@ class Course{
 	
 	
 	public Course(){}
+	public Course(String name){		
+		this.name=name;
+	}
 	
 	//Big shout-out to eclipse getter/setter auto-fill
 
