@@ -5,6 +5,7 @@
 //after this is transforming this into an android app
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.*;
@@ -67,13 +68,16 @@ public class Main {
 			tmp=tmp.replaceAll(Pattern.quote("course info /  /"), "");
 			if(tmp.contains("http://"))
 				tmp=tmp.substring(tmp.indexOf("Location: ")+9, tmp.indexOf("Campus Map"));
-			tmp=tmp.trim();
+			tmp=tmp.replace(String.valueOf((char) 160), " ").trim();
 			rawInfo.add(tmp);
 		}
 		
+		//Pattern intPattern = Pattern.compile("[\\+\\-]?\\d+");
+		
 		for (String str : rawInfo) {
+			
 			System.out.println(str);
-		}
+		}	
 		
 		
 	}
