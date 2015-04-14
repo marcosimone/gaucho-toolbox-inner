@@ -52,26 +52,16 @@ public class Main {
 			System.exit(1);
 		}
 		
-		//id contains courseheading
+
 		Element classTable = schedulePage.getElementById("pageContent_CourseList");
-		Elements classTitles=classTable.select("[id*=courseheading]");
 		
-		//courses with titles constructed
-		for(int i=0;i<classTitles.size();i++){
-			courseArray.add(new Course(classTitles.get(i).text().replace(String.valueOf((char) 160), " ").trim()));
-			
+		//courses with name and finalDate constructed
+		Elements finals = schedulePage.getElementById("pageContent_FinalsGrid").select("td[class*=clcellprimary]");		
+		
+		for(int i=0;i<finals.size();i++){
+			courseArray.add(new Course(finals.get(i).text().replace(String.valueOf((char) 160), " ").trim(), finals.get(i+1).text().replace(String.valueOf((char) 160), " ").trim()));
+			i++;
 		}
-		
-		Element finalsTable = schedulePage.getElementById("pageContent_FinalsGrid");
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		
 		
 		
@@ -89,14 +79,48 @@ public class Main {
 			rawData.add(tmp);
 		}
 		
-		String intPattern = "[\\+\\-]?\\d+";
-		String charPattern = "[LP]";
-		String doublePattern="\\d\\.\\d+";
-		Course tmp;
+		String charPattern = "\\w( \\w)*";
+		
+		//UNKNOWN ERROR: WOULD APPRECIATE HELP
+		int currentCourse=-1;
 		for (int index=0;index<rawData.size();index++) {
-			String str=rawData.get(index);
+			if(currentCourse<courseArray.size()-1 && rawData.get(index).equals(courseArray.get(currentCourse+1).getName())){
+				currentCourse++;
+				index++;
+				courseArray.get(currentCourse).setEnrollCode(rawData.get(index));
+				index++;
+				courseArray.get(currentCourse).setGrading(rawData.get(index).charAt(0));
+				index++;
+				courseArray.get(currentCourse).setUnits(Double.parseDouble(rawData.get(index)));
+			}else if(!rawData.get(index).matches(charPattern)){
+
+				courseArray.get(currentCourse).addProfessor(rawData.get(index));
+				
+			}else{
+				if(!courseArray.get(currentCourse).lectureSet()){
+					
+					courseArray.get(currentCourse).setLecture(rawData.get(index) + " " + rawData.get(index+1));
+					index+=2;
+					courseArray.get(currentCourse).setLectureRoom(rawData.get(index));
+					
+				}else{
+					
+					courseArray.get(currentCourse).setSection(rawData.get(index) + " " + rawData.get(index+1));
+					index+=2;
+					courseArray.get(currentCourse).setSectionRoom(rawData.get(index));
+					
+				}
+				
+				
+				
+			}
+			
 				
 		}	
+		for(Course c : courseArray){
+			
+			System.out.println(c);
+		}
 		
 		
 	}
@@ -158,30 +182,39 @@ public class Main {
 
 class Course{
 	private String name;
-	private int enrollCode;
+	private String enrollCode;
 	private char grading;
 	private double units;
-	private String professor;
+	private ArrayList<String> professors;
 	private String lecture;
 	private String lectureRoom;
-	private String ta;
 	private String section;
 	private String sectionRoom;
 	private String finalDate;
 	
 	
-	public Course(){}
+	public Course(){professors=new ArrayList<String>();}
 	public Course(String name){		
 		this.name=name;
+		professors=new ArrayList<String>();
 	}
 	
+	public boolean lectureSet(){
+		
+		return lecture!=null;
+	}
+	
+	public Course(String name, String finalDate){
+		
+		this.name=name;
+		this.finalDate=finalDate;
+	}
 	//Big shout-out to eclipse getter/setter auto-fill
-
-	public int getEnrollCode() {
+	public String getEnrollCode() {
 		return enrollCode;
 	}
 
-	public void setEnrollCode(int enrollCode) {
+	public void setEnrollCode(String enrollCode) {
 		this.enrollCode = enrollCode;
 	}
 
@@ -209,14 +242,15 @@ class Course{
 		this.name = name;
 	}
 
-	public String getProfessor() {
-		return professor;
+	public void addProfessor(String prof){
+		
+		professors.add(prof);
 	}
-
-	public void setProfessor(String professor) {
-		this.professor = professor;
+	
+	public ArrayList<String> getProfessors(){
+		return professors;
 	}
-
+	
 	public String getLecture() {
 		return lecture;
 	}
@@ -231,14 +265,6 @@ class Course{
 
 	public void setLectureRoom(String lectureRoom) {
 		this.lectureRoom = lectureRoom;
-	}
-
-	public String getTa() {
-		return ta;
-	}
-
-	public void setTa(String ta) {
-		this.ta = ta;
 	}
 
 	public String getSection() {
@@ -264,16 +290,32 @@ class Course{
 	public void setFinalDate(String finalDate) {
 		this.finalDate = finalDate;
 	}
-
+	
 	@Override
 	public String toString() {
+		String profs="";
+		
+		
+		if(professors!=null){
+			
+			for(int i=0;i<professors.size()-1; i++){
+				profs+=professors.get(i)+", ";
+				
+			}
+			profs+=professors.get(professors.size()-1);
+			
+		}else{
+			profs="none";
+		}
+		
 		return "Course [name=" + name + ", enrollCode=" + enrollCode
-				+ ", grading=" + grading + ", units=" + units + ", professor="
-				+ professor + ", lecture=" + lecture + ", lectureRoom="
-				+ lectureRoom + ", ta=" + ta + ", section=" + section
-				+ ", sectionRoom=" + sectionRoom + ", finalDate=" + finalDate
-				+ "]";
+				+ ", grading=" + grading + ", units=" + units + ", professors="
+				+ profs + ", lecture=" + lecture + ", lectureRoom="
+				+ lectureRoom + ", section=" + section + ", sectionRoom="
+				+ sectionRoom + ", finalDate=" + finalDate + "]";
 	}
+
+
 	
 	
 	
