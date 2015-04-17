@@ -185,7 +185,7 @@ class Course{
 	private String enrollCode;
 	private char grading;
 	private double units;
-	private ArrayList<String> professors;
+	private ArrayList<String> professors=new ArrayList<String>();
 	private String lecture;
 	private String lectureRoom;
 	private String section;
@@ -193,10 +193,9 @@ class Course{
 	private String finalDate;
 	
 	
-	public Course(){professors=new ArrayList<String>();}
+	public Course(){}
 	public Course(String name){		
 		this.name=name;
-		professors=new ArrayList<String>();
 	}
 	
 	public boolean lectureSet(){
