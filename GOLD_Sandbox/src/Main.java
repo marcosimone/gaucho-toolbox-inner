@@ -72,7 +72,7 @@ public class Main {
 			
 			String tmp;
 			tmp=exp.get(i).text();
-			tmp=tmp.replaceAll(Pattern.quote("course info /  /"), "");
+			tmp=tmp.replaceAll(Pattern.quote("course info / Â /"), "");
 			if(tmp.contains("http://"))
 				tmp=tmp.substring(tmp.indexOf("Location: ")+9, tmp.indexOf("Campus Map"));
 			tmp=tmp.replace(String.valueOf((char) 160), " ").trim();
@@ -81,7 +81,7 @@ public class Main {
 		
 		String charPattern = "\\w( \\w)*";
 		
-		//UNKNOWN ERROR: WOULD APPRECIATE HELP
+		
 		int currentCourse=-1;
 		for (int index=0;index<rawData.size();index++) {
 			if(currentCourse<courseArray.size()-1 && rawData.get(index).equals(courseArray.get(currentCourse+1).getName())){
